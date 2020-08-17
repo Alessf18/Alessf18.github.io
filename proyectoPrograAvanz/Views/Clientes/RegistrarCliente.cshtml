@@ -1,0 +1,284 @@
+﻿@model proyectoPrograAvanz.Models.Clientes
+
+@{
+    ViewBag.Title = "RegistarCliente";
+}
+
+<h2 class=" p-2 text-capitalize">Registar Cliente:</h2>
+
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "frmRegistrar" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row ml-1">
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class=" col-lg-4">
+            @Html.Label("Nombre", htmlAttributes: new { @class = "control-label col-md-2" })
+
+            @Html.EditorFor(model => model.Snombre, new { htmlAttributes = new { @class = "form-control", autofocus = "true", spellcheck = "true", required = "required", maxlength = "40" } })
+            @Html.ValidationMessageFor(model => model.Snombre, "", new { @class = "text-danger" })
+
+        </div>
+        <div class=" col-lg-4">
+            @Html.Label("Apellidos", htmlAttributes: new { @class = "control-label col-md-2" })
+
+            @Html.EditorFor(model => model.Sapellidos, new { htmlAttributes = new { @class = "form-control", spellcheck = "true", required = "required", maxlength = "60" } })
+            @Html.ValidationMessageFor(model => model.Sapellidos, "", new { @class = "text-danger" })
+
+        </div>
+        <div class=" col-lg-3">
+            @Html.Label("Cédula", htmlAttributes: new { @class = "control-label col-md-2" })
+
+            @Html.EditorFor(model => model.Scedula, new { htmlAttributes = new { @class = "form-control", required = "required", maxlength = "9", pattern = "^[0-9]*$", tile = "Solo debe ingresar números" } })
+            @Html.ValidationMessageFor(model => model.Scedula, "", new { @class = "text-danger" })
+
+        </div>
+    </div>
+    <div class="row ml-1 ">
+        <div class=" col-lg-4">
+            @Html.Label("Número celular", htmlAttributes: new { @class = "control-label " })
+
+            @Html.EditorFor(model => model.StelCel, new { htmlAttributes = new { @class = "form-control", required = "required", maxlength = "8", pattern = "^[0-9]*$" } })
+            @Html.ValidationMessageFor(model => model.StelCel, "", new { @class = "text-danger" })
+
+        </div>
+        <div class=" col-lg-4">
+            @Html.Label("Teléfono casa", htmlAttributes: new { @class = "control-label " })
+
+            @Html.EditorFor(model => model.StelCasa, new { htmlAttributes = new { @class = "form-control", required = "required", maxlength = "8", pattern = "^[0-9]*$" } })
+            @Html.ValidationMessageFor(model => model.StelCasa, "", new { @class = "text-danger" })
+        </div>
+        <div class=" col-lg-3">
+            <label for="correo" class="control-label, text-dark" > Correo electónico</label>
+            <input id="correo" class="form-control " type="email" maxlength="60" />
+        </div>
+    </div>
+    <div class="row ml-1 mb-2">
+        <div class="col-lg-4 ">
+            <label class="control-label, text-dark" > Contraseña</label>
+            <input id="contra" class="form-control " type="password" required="required" minlength="8" maxlength="11" />
+        </div>
+        <div class="col-lg-4">
+            <label class="control-label, text-dark" > Confirmar Contraseña</label>
+            <input id="tempContra" class="form-control " type="password" required="required" minlength="8" maxlength="11" />
+        </div>
+        <div class="col-lg-3"></div>
+    </div>
+    <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
+            <button id="btnRegistrar" type="submit" class="btn btn-primary btn-pill btn-block disabled "> Registrar</button>
+        </div>
+        <div class="col-lg-3"></div>
+    </div>
+}
+<script>
+    
+    $("#correo").focusout(function () {
+        var correo = $("#correo").val();
+        if (correo == "") {
+            $("#correo").val("");
+            $("#correo").focus();
+        }
+        else {
+            $.ajax({
+                url: "/Clientes/EsCorreoValido",
+                type: "POST",
+                data: {
+                    correo: correo
+                }, complete: function (data) {
+                    if (data.responseJSON == "F") {
+                        toastr.error("Este correo ya esta en uso por otro usuario, por favor cambie su correo");
+                        $("#correo").val("");
+                        $("#correo").focus();
+                        
+                    }
+                }
+            });
+        }
+    });
+    $("#btnRegistrar").click(function (e) {
+        e.preventDefault();
+        if ($("#btnRegistrar").hasClass("disabled") != true) {
+            var nombre = $("#Snombre").val();
+            var apellidos = $("#Sapellidos").val();
+            var cedula = $("#Scedula").val();
+            var correo = $("#correo").val();
+            var contra = $("#contra").val();
+            var celular = $("#StelCel").val();
+            var telCasa = $("#StelCasa").val();
+            $.ajax({
+                type: "POST",
+                url: "/Clientes/Guardar_Info",
+                data: {
+                    nombre: nombre,
+                    apellidos: apellidos,
+                    cedula: cedula,
+                    correo: correo,
+                    contra: contra,
+                    celular: celular,
+                    telCasa: telCasa
+                }, complete: function (data) {
+                    if (data.responseJSON[0] == "E") {
+                        swal("Acción existosa", "Cliente registrado de manera correcta ", "success");
+                        window.location = "/Home/Login";
+
+                    } else {
+                        swal("Error", "No se pudo registrar al cliente", "error");
+                        document.getElementById("frmRegistrar").reset();
+                        location.reload();
+                    }
+                }
+            });
+        }
+    });
+    $("#tempContra").focusout(function () {
+        var contraTexto = $("#contra").val();
+        var contraTemp = $("#tempContra").val();
+        if (contraTemp != contraTexto) {
+            toastr.error("Las contraseñnas con coinciden");
+            $("#contra").val("");
+            $("#tempContra").val("");
+            $("#contra").focus();
+            
+        }
+    });
+    $("#Snombre").keyup(function (e) {
+        if ((e.key.match("^[0-9]+$") != null)) {
+            var texto = $("#Snombre").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#Snombre").val(textoNuevo);
+        }
+    });
+    $("#Snombre").focusout(function (e) {
+        var texto = $("#Snombre").val();
+        if ((texto.match("^[0-9]+$") != null)) {
+            $("#Snombre").val("");
+        }
+    });
+    $("#Sapellidos").focusout(function (e) {
+        var texto = $("#Sapellidos").val();
+        if ((texto.match("^[0-9]+$") != null)) {
+            $("#Sapellidos").val("");
+        }
+    });
+    $("#Sapellidos").focusin(function () {
+        var texto = $("#Snombre").val();
+        if (texto == "" || texto.length <= 2) {
+            $("#Snombre").focus();
+            
+        } else if ($("#btnRegistrar").hasClass("disabled") != true) {
+            $("#btnRegistrar").addClass("disabled");
+        }
+    });
+    $("#Sapellidos").keyup(function (e) {
+        if ((e.key.match("^[0-9]+$") != null)) {
+            var texto = $("#Sapellidos").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#Sapellidos").val(textoNuevo);
+        }
+    });
+    $("#Scedula").focusin(function () {
+        var texto = $("#Sapellidos").val();
+        if (texto == "" || texto.length <= 2) {
+            $("#Sapellidos").focus();
+            
+        }
+    });
+    $("#Scedula").focusout(function (e) {
+        var texto = $("#Scedula").val();
+        if ((texto.match("^[a-zA-Z]+$") != null)) {
+            $("#Scedula").val("");
+        }
+    });
+    $("#Scedula").keyup(function (e) {
+        if ((e.key.match("^[a-zA-Z]+$") != null)) {
+            var texto = $("#Scedula").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#Scedula").val(textoNuevo);
+        }
+    });
+    $("#StelCel").focusin(function () {
+        var texto = $("#Scedula").val();
+        if (texto == "" || texto.length < 9) {
+            $("#Scedula").focus();
+            
+        } else if ($("#btnRegistrar").hasClass("disabled") != true) {
+            $("#btnRegistrar").addClass("disabled");
+        }
+    });
+    $("#StelCel").focusout(function (e) {
+        var texto = $("#StelCel").val();
+        if ((texto.match("^[a-zA-Z]+$") != null)) {
+            $("#StelCel").val("");
+        }
+    });
+    $("#StelCel").keyup(function (e) {
+        if ((e.key.match("^[a-zA-Z]+$") != null)) {
+            var texto = $("#StelCel").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#StelCel").val(textoNuevo);
+        }
+    });
+    $("#StelCasa").focusout(function (e) {
+        var texto = $("#StelCasa").val();
+        if ((texto.match("^[a-zA-Z]+$") != null)) {
+            $("#StelCasa").val("");
+        }
+    });
+    $("#StelCasa").focusin(function () {
+        var texto = $("#StelCel").val();
+        if (texto == "" || texto.length < 8) {
+            $("#StelCel").focus();
+            
+        } else if ($("#btnRegistrar").hasClass("disabled") != true) {
+            $("#btnRegistrar").addClass("disabled");
+        }
+    });
+    $("#StelCasa").keyup(function (e) {
+        if ((e.key.match("^[a-zA-Z]+$") != null)) {
+            var texto = $("#StelCasa").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#StelCasa").val(textoNuevo);
+        }
+    });
+    $("#correo").focusin(function () {
+        var texto = $("#StelCasa").val();
+        if (texto == "" || texto.length < 8) {
+            $("#StelCasa").val("");
+            $("#StelCasa").focus();
+            
+        } 
+    });
+    $("#contra").focusin(function () {
+        var texto = $("#correo").val();
+        if (texto == "") {
+            $("#correo").focus();
+            $("#correo").val("");
+            
+        }
+    });
+    $("#tempContra").focusin(function () {
+        var texto = $("#contra").val();
+        if (texto == "" || texto.length < 8) {
+            $("#contra").val("");
+            $("#contra").focus();
+            toastr.error("La contraseñan debe de contener 8 carcteres como minimo");
+            
+        }
+    });
+    $("#btnRegistrar").focusin(function (e) {
+        var nombre = $("#Snombre").val();
+        var apellidos = $("#Sapellidos").val();
+        var cedula = $("#Scedula").val();
+        var correo = $("#correo").val();
+        var contra = $("#contra").val();
+        var celular = $("#StelCel").val();
+        var telCasa = $("#StelCasa").val();
+        if (nombre != "" && apellidos != "" && cedula != "" && correo != "" && contra != "" && celular != "" && telCasa != "") {
+            $("#btnRegistrar").removeClass("disabled");
+        } else {
+            $("#btnRegistrar").addClass("disabled");
+        }
+    });
+
+</script>

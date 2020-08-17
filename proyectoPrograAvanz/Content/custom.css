@@ -1,0 +1,39 @@
+﻿.kt-login.kt-login--v2 .kt-login__wrapper .kt-login__container {
+    width: 100% !important;    
+}
+@media (max-width: 768px) {
+    .kt-login.kt-login--v2 .kt-login__wrapper .kt-login__container {        
+        max-width: 100% !important;        
+    }
+}
+
+.border-danger {
+    border: solid red;
+}
+
+.claveError {
+    position: absolute;
+    color: white !important;
+    width: 100%;
+    font-weight: bold;
+}
+
+.kt-header {
+    background-color: #dc273c !important;
+}
+
+.kt-aside__brand {
+    background-color: #e03d50 !important;
+}
+
+.kt-aside-menu {
+    background-color: #353535 !important;
+}
+
+.kt-aside-menu .kt-menu__nav > .kt-menu__item > .kt-menu__heading .kt-menu__link-text, .kt-aside-menu .kt-menu__nav > .kt-menu__item > .kt-menu__link .kt-menu__link-text {
+    color: white !important;
+}
+.kt-aside--minimize .kt-aside-menu .kt-menu__nav > .kt-menu__item > .kt-menu__link > .kt-menu__link-icon {
+    color: white !important;
+}
+

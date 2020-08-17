@@ -1,0 +1,149 @@
+﻿@model proyectoPrograAvanz.Models.Repartidor
+
+@{
+    ViewBag.Title = "EliminarRepartidor";
+}
+
+<h2 class=" p-2">Eliminar Repartidor</h2>
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "frmElimRepart" }))
+{
+<div class="container">
+    <div class="row mb-3">
+        <div class="col-3"></div>
+        <div class="d-inline align-self-center col-4 ">
+            <input id="idRepart" class="form-control rounded-pill " autofocus type="text" placeholder="cedula del repartidor" required="required" maxlength="9" />
+        </div>
+        <div class="d-inline align-self-center col-2">
+            <button id="btnBuscar" type="submit" class="btn btn-outline-primary btn-pill"> <i class="icon-search"></i></button>
+        </div>
+    </div>
+</div>
+<div class="row ml-2">
+    <div class="col-lg-4">
+        <!--cambiar el color de los labels
+            cambiar el color de los botones en el hover
+            -->
+        @Html.Label("Nombre", htmlAttributes: new { @class = "control-label, text-dark" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Snombre, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+            @Html.ValidationMessageFor(model => model.Snombre, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="col-lg-4">
+        @Html.Label("Apellidos", htmlAttributes: new { @class = "control-label, text-dark" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Sapellidos, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+            @Html.ValidationMessageFor(model => model.Sapellidos, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="col-lg-3">
+        @Html.Label("Número de cedula", htmlAttributes: new { @class = "control-label, text-dark" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Scedula, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+            @Html.ValidationMessageFor(model => model.Scedula, "", new { @class = "text-danger" })
+        </div>
+    </div>
+</div>
+<div class="row ml-2 mb-3">
+    <div class="col-lg-4">
+        @Html.Label("Número de celular", htmlAttributes: new { @class = "control-label, text-dark"  })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.StelCelular, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+            @Html.ValidationMessageFor(model => model.StelCelular, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="col-lg-4">
+        @Html.Label("Correo electrónico", htmlAttributes: new { @class = "control-label, text-dark"  })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Scorreo, new { htmlAttributes = new { @class = "form-control", @readonly = "true" } })
+            @Html.ValidationMessageFor(model => model.Scorreo, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="col-lg-3"></div>
+
+</div>
+<div class="row">
+    <div class="col-lg-3"></div>
+    <div class="form-group col-lg-6">
+        <button id="btnElimRepart" type="submit" class="btn btn-danger btn-pill btn-block">Eliminar repartidor</button>
+    </div>
+    <div class="col-lg-3"></div>
+</div>
+}
+<script>
+    $("#btnBuscar").click(function (e) {
+        e.preventDefault();
+        var id = $("#idRepart").val();
+        if (id == "") {
+            toastr.error("Campo en blanco");
+            $("#idRepart").focus();
+            /*Desplegar un mensaje*/
+        } else {
+            var datos = [];
+            datos[0] = id;
+            $.ajax({
+                type: "POST",
+                url: "/Repartidor/RecuperarInfo",
+                data: {
+                    datos: datos
+                }, complete: function (data) {
+                    if (data.responseJSON =="F") {
+                        toastr.error("No existe un repartidor  registrado en el sistema con el número de cedula dado ");
+                        document.getElementById("frmElimRepart").reset();
+                        $("#idRepart").focus();
+                    } else {
+
+                        $("#Snombre").val(data.responseJSON[0]);
+                        $("#Sapellidos").val(data.responseJSON[1]);
+                        $("#Scedula").val(id.toString());
+                        $("#StelCelular").val(data.responseJSON[2]);
+                        $("#Scorreo").val(data.responseJSON[3]);
+                    }
+                }
+            });
+        }
+    });
+    $("#btnElimRepart").click(function (e) {
+        e.preventDefault();
+        var id = $("#idRepart").val();
+        if (id == "") {
+            $("#idRepart").focus();
+            /*Desplegar un mensaje*/
+        }
+        else {
+            var datos = [];
+            datos[0] = id;
+            $.ajax({
+                type: "POST",
+                url: "/Repartidor/Eliminar_Repartidor",
+                data: {
+                    datos: datos
+                }, complete: function (data) {
+                    if (data.responseJSON == "V") {
+                       /* toastr.success("Repartidor eliminado de manera correcta ");*/
+                        swal("Acción existosa", "Repartidor eliminado de manera correcta ", "success");
+                    } else {
+                        toastr.error();
+                        swal("Error", "No se pudo eliminar  al repartidor", "error");
+                    }
+                    document.getElementById("frmElimRepart").reset(true);
+                    $("#idRepart").focus();
+                }
+            });
+        }
+
+    });
+    $("#idRepart").keyup(function (e) {
+        if ((e.key.match("^[a-zA-Z]+$") != null)) {
+            var texto = $("#idRepart").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#idRepart").val(textoNuevo);
+        }
+    });
+    $("#idRepart").focusout(function () {
+        var texto = $("#idRepart").val();
+        if (texto == "") {
+            $("#idRepart").focus();
+        }
+    });
+</script>

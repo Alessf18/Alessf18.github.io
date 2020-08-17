@@ -1,0 +1,178 @@
+﻿@model proyectoPrograAvanz.Models.Pedidos
+
+@{
+    ViewBag.Title = "CancelarPedido";
+}
+
+<h2 class=" p-2 text-capitalize">Cancelación Pedido</h2>
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "frmElimRepart" }))
+{
+    <div class="container">
+    <div class="row mb-3">
+        <div class="col-3"></div>
+        <div class="d-inline align-self-center col-4 ">
+             <input id="codPedido" class="form-control rounded-pill " autofocus type="text" placeholder="codigo del pedido" required="" maxlength="2"/>
+        </div>
+        <div class="d-inline align-self-center col-2">
+            <button id="btnBuscar"class="btn btn-outline-primary btn-pill"><i class="icon-search"></i></button>
+        </div>
+    </div>
+</div>
+
+<div class="row ml-2">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    <div class="form-group col-lg-4">
+        @Html.Label("Nombre Cliente", htmlAttributes: new { @class = "control-label, text-dark"  })
+        <div class="col-md-10">
+           <input id="nombCliente" class="form-control" type="text" value="@Session["NombCl"]" readonly="readonly"/>
+        </div>
+    </div>
+
+    <div class="form-group col-lg-4">
+        @Html.Label("Ubicación del domicilio", htmlAttributes: new { @class = "control-label, text-dark"  })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Subicacion, new { htmlAttributes = new { @class = "form-control", autofocus = "true", @readonly = "true" } })
+            @Html.ValidationMessageFor(model => model.Subicacion, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group col-lg-3 ">
+        @Html.Label("Fecha de entrega", htmlAttributes: new { @class = "control-label " })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.DtfechaEntr, new { htmlAttributes = new { @class = "form-control", @type = "text", @readonly = "true" } })
+            @Html.ValidationMessageFor(model => model.DtfechaEntr, "", new { @class = "text-danger" })
+        </div>
+    </div>
+</div>
+<div class="row ml-2">
+    <div class="form-group col-lg-4 ">
+        @Html.Label("Hora de entrega", htmlAttributes: new { @class = "control-label, text-dark"  })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.DthoraEntr, new { htmlAttributes = new { @class = "form-control", @type = "time", @readonly = "true" } })
+            @Html.ValidationMessageFor(model => model.DthoraEntr, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="form-group col-lg-4">
+        @Html.Label("Productos", htmlAttributes: new { @class = "control-label " })
+        <div class="col-md-10">
+            <!-- Multiselect dropdown -->
+           <textarea  id="productosPed"class="form-control" readonly="readonly"> </textarea>
+        </div>
+    </div>
+    <div class="form-group col-lg-3">
+        @Html.Label("Nombre Repartidor", htmlAttributes: new { @class = "control-label, text-dark"  })
+        <div class="col-md-10">
+            <input  id="nombRepart"class="form-control " type="text" readonly="readonly" />
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-3"></div>
+    <div class="form-group col-lg-6">
+        <button id="btnElimPedid" type="submit" class="btn btn-danger btn-pill btn-block">Cancelar pedido</button>
+    </div>
+    <div class="col-lg-3"></div>
+</div>
+    <input id="cedCl"  type="hidden"value="@Session["IdCl"]"/>
+}
+<script>
+    $(document).ready(function () {
+        var cliente = $("#cedCl").val();
+        if (cliente == "") {
+            window.location = "/Home/Login";
+        } 
+    });
+    $("#btnBuscar").click(function (e) {
+        e.preventDefault();
+        var id = $("#codPedido").val();
+        if (id == "") {
+            toastr.error("Campo en blanco");
+            $("#codPedido").focus();
+        } else {
+            var datos = [];
+            datos[0] = id;
+            datos[1] = $("#cedCl").val();
+            $.ajax({
+                type: "POST",
+                url: "/Pedidos/RecuperarInfo",
+                data: {
+                    datos: datos
+                }, complete: function (data) {
+                    if (data.responseJSON =="F") {
+                        toastr.error("No existe un pedido  registrado en el sistema con el codigo dado ");
+                        document.getElementById("frmElimRepart").reset();
+                        document.getElementById("DthoraEntr").value = '';
+                        $("#codPedido").focus();
+                      
+                   
+                    } else {
+
+                        $("#Subicacion").val(data.responseJSON[1]);
+                        $("#DtfechaEntr").val(data.responseJSON[2]);
+                        $("#DthoraEntr").val(data.responseJSON[3]);
+                        $("#nombRepart").val(data.responseJSON[4]);
+                        traerProductos();
+                    }
+                }
+            });
+        }
+    });
+    $("#btnElimPedid").click(function (e) {
+        e.preventDefault();
+        var id = $("#codPedido").val();
+        if (id == "") {
+            toastr.error("Campo en blanco");
+            $("#codPedido").focus();
+        }
+        else {
+            var datos = [];
+            datos[0] = id;
+            $.ajax({
+                type: "POST",
+                url: "/Pedidos/Eliminar_Pedido",
+                data: {
+                    datos: datos
+                }, complete: function (data) {
+                    if (data.responseJSON == "V") {
+                        toastr.success("Pedido eliminado de manera correcta ");
+                        $("#DthoraEntr").text="";
+                    } else {
+                        toastr.error("No se pudo eliminar el pedido");
+                    }
+                    document.getElementById("frmElimRepart").reset(true);
+                    $("#codPedido").focus();
+                }
+            });
+        }
+
+    });
+    function traerProductos() {
+            var id = $("#codPedido").val();
+            var datos = [];
+            datos[0] = id;
+            $.ajax({
+                type: "POST",
+                url: "/Pedidos/TraerProductosPorPedido",
+                data: {
+                    datos: datos
+                }, complete: function (data) {
+                    if (data.responseJSON != "F") {
+                        $("#productosPed").val(data.responseJSON);
+                    }
+                }
+            });
+        }
+    $("#codPedido").keyup(function (e) {
+        if ((e.key.match("^[a-zA-Z]+$") != null)) {
+            var texto = $("#codPedido").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#codPedido").val(textoNuevo);
+        }
+    });
+    $("#codPedido").focusout(function () {
+        var texto = $("#codPedido").val();
+        if (texto == "") {
+            $("#codPedido").focus();
+        }
+    });
+</script>

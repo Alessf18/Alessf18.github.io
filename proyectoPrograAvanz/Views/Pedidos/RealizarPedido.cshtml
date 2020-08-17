@@ -1,0 +1,320 @@
+﻿@model proyectoPrograAvanz.Models.Pedidos
+
+@{
+    ViewBag.Title = "RealizarPedido";
+}
+<h2 class="  p-2 text-capitalize">Realizar Pedido:</h2>
+@using (Html.BeginForm(null, null, FormMethod.Post, new { id = "frmIngrPed" }))
+{
+    @Html.AntiForgeryToken()
+    <div class="row ml-2">
+
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group col-lg-4">
+            @Html.Label("Nombre Cliente", htmlAttributes: new { @class = "control-label, text-dark"  })
+            <input type="text" readonly="readonly" value=@Session["NombCl"] class="form-control" />
+        </div>
+
+        <div class="form-group col-lg-4">
+            @Html.Label("Ubicación del domicilio", htmlAttributes: new { @class = "control-label, text-dark"  })
+
+            @Html.EditorFor(model => model.Subicacion, new { htmlAttributes = new { @class = "form-control", autofocus = "true", spellcheck = "true", @type = "text" } })
+            @Html.ValidationMessageFor(model => model.Subicacion, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group col-lg-3 ">
+            @Html.Label("Fecha de entrega", htmlAttributes: new { @class = "control-label " })
+
+            @Html.EditorFor(model => model.DtfechaEntr, new { htmlAttributes = new { @class = "form-control", @type = "date", @placeholder = "" } })
+            @Html.ValidationMessageFor(model => model.DtfechaEntr, "", new { @class = "text-danger" })
+        </div>
+    </div>
+    <div class="row ml-2">
+        <div class="form-group col-lg-4 ">
+            @Html.Label("Hora de entrega", htmlAttributes: new { @class = "control-label, text-dark"  })
+
+            @Html.EditorFor(model => model.DthoraEntr, new { htmlAttributes = new { @class = "form-control", @type = "time" } })
+            @Html.ValidationMessageFor(model => model.DthoraEntr, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group col-lg-4">
+            @Html.Label("Productos", htmlAttributes: new { @class = "control-label " })
+
+            <!-- Multiselect dropdown -->
+            <select id="lst_productos" class="form-control " required>
+                @if (ViewBag.listProductos != null)
+                {
+                    <option value="-1">--Seleccione un producto--</option>
+                    foreach (var producto in ViewBag.listProductos)
+                    {
+                        var id = @producto.ItemArray[0];
+                        <option class="p-2" value=@producto.ItemArray[0]>@producto.ItemArray[2]   </option>
+                    }
+                }
+                else
+                {
+                    <option class="text-danger" value="-1">No tenemos productos en este momento</option>
+                }
+            </select><!-- End -->
+
+        </div>
+        <div id="divPrecioTotal" class="d-none">
+            @Html.Label("Precio total del pedido", htmlAttributes: new { @class = "control-label " })
+            <div class="d-inline-flex">
+                <label class="text-dark m-md-auto ">₡</label>
+                <input id="precioTotal" class="form-control " value="0" type="text" readonly="readonly" />
+            </div>
+        </div>
+        <div class="col-lg-3">
+            <label class="control-label, text-dark" > Productos agregados al pedido</label>
+            <select id="prodsPedido" class="form-control">
+                <option value="-1">--haga click para eliminar un producto--</option>
+            </select>
+        </div>
+    </div>
+    <div class="d-none">
+        <select id="lst_precios" required>
+
+            @if (ViewBag.listProductos != null)
+            {
+
+                foreach (var producto in ViewBag.listProductos)
+                {
+
+                    <option value=@producto.ItemArray[0]>@producto.ItemArray[1]</option>
+                }
+            }
+
+        </select>
+
+    </div>
+    <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="form-group col-lg-6">
+            <button id="btnIngr" type="submit" class="btn btn-primary btn-pill btn-block disabled">Confirmar pedido</button>
+
+        </div>
+        <div class="col-lg-3"></div>
+    </div>
+    <input type="hidden" id="idCl" value=@Session["IdCl"] />
+}
+<script>
+    var precios = [];
+    precios = $("#lst_precios option").toArray();
+    var horaInicio = new Date();
+    horaInicio.setHours(7);
+    horaInicio.setMinutes(0);
+    var horaCierre = new Date();
+    horaCierre.setHours(16);
+    horaCierre.setMinutes(30);
+    var fechaActual = new Date();
+    /*Variables globales*/
+    $(document).ready(function () {
+        var cliente = $("#idCl").val();
+        if (cliente == "") {
+            window.location = "/Home/Login";
+        } else {
+            var nombre = $("#nombCl").val();
+            $("#SidCliente").val(nombre);
+        }
+    });
+    $("#btnIngr").click(function (e) {
+        e.preventDefault();
+        if ($("#btnIngr").hasClass("disabled") != true) {
+            if (esHoraValida() == true && esFechaValida() == true) {
+                var datos = [];
+                var prodPedi = [];
+                datos[0] = $("#Subicacion").val();
+                datos[1] = $("#DtfechaEntr").val();
+                datos[2] = $("#DthoraEntr").val();
+                datos[3] = $("#idCl").val();
+                datos[4] = $("#precioTotal").val();
+                prodPedi = $("#prodsPedido option").toArray();
+                if (prodPedi.length == 0) {
+                    $("#lst_productos").focus();
+                    toastr.error("debe de seleccionar al menos un producto para poder continuar");
+
+                } else {
+                    var idprod = [];
+                    var precioTotal = $("#precioTotal").val();
+                    var indiceProd = 0;
+                    for (var indice = 1; indice < prodPedi.length; indice++) {
+                        idprod[indiceProd] = prodPedi[indice].value;
+                        indiceProd++;
+                    }
+                    swal("Confirmación", "Esta seguro que desea realizar este pedido por ₡ " + precioTotal, {
+                        buttons: {
+                            cancel: "Cancelar",
+                            acept: {
+                                text: "Confirmar",
+                                value: "confirmar"
+                            }
+                        }
+                    }).then((value) => {
+                        switch (value) {
+                            case "confirmar":
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/Pedidos/Guardar_Info",
+                                    data: {
+                                        datos: datos,
+                                        productos: idprod
+                                    }, complete: function (data) {
+                                        if (data.responseJSON == "F") {
+                                            swal("Error", "Ocurrio un problema al ingresar el pedido", "error");
+
+                                        } else if (data.responseJSON == "E") {
+                                            swal("Acción exitosa", "Pedido registrado de manera correcta", "success");
+                                            location.reload(true);
+                                            $("#Subicacion").focus();
+                                        } else {
+                                            swal("Error", "Ocurrio un problema al ingresar el pedido, no existen repartidores en el sistema", "error");
+                                            window.location = "/Repartidor/IngresarRepartidor";
+                                        }
+                                    }
+                                });
+                                break;
+                            default:
+                                location.reload(true);
+                                break;
+                        }
+                    });
+                }
+            } else {
+                $("#btnIngr").addClass("disabled");
+                $("#DtfechaEntr").focus();
+                $("#DtfechaEntr").val("");
+                $("#DthoraEntr").val("");
+            }
+        }
+    }
+    );
+    $("#lst_productos").change(function (e) {
+        var prodSelecc = $(this).find("option:selected");
+        var idProdSelecc = prodSelecc.val();
+        if (idProdSelecc != -1) {
+            var textoProdSelecc = prodSelecc.text();
+            var precioActual = parseInt($("#precioTotal").val());
+            $("#prodsPedido").append("<option value=" + idProdSelecc + ">" + textoProdSelecc + "</option>");
+            $("#lst_productos option:selected").remove();
+            for (var indice = 0; indice < precios.length; indice++) {
+                if (precios[indice].value == idProdSelecc) {
+                    precioActual += parseInt(precios[indice].innerText);
+                }
+            }
+            $("#precioTotal").val(precioActual);
+        }
+    }
+    );
+    $("#prodsPedido").change(function () {
+        var prodSelecc = $(this).find("option:selected");
+        var idProdSelecc = prodSelecc.val();
+        if (idProdSelecc != -1) {
+            var textoProdSelecc = prodSelecc.text();
+            var precioActual = parseInt($("#precioTotal").val());
+            $("#lst_productos").append("<option value=" + idProdSelecc + ">" + textoProdSelecc + "</option>");
+            $("#prodsPedido option:selected").remove();
+            for (var indice = 0; indice < precios.length; indice++) {
+                if (precios[indice].value == idProdSelecc) {
+                    precioActual -= parseInt(precios[indice].innerText);
+                }
+            }
+            $("#precioTotal").val(precioActual);
+        }
+    }
+    );
+    $("#DtfechaEntr").focusin(function () {
+        var ubi = $("#Subicacion").val();
+        if (ubi = "" || ubi.length < 20) {
+            $("#Subicacion").focus();
+        }
+    }
+    );
+    $("#DtfechaEntr").focusout(function () {
+        if (esFechaValida() != true) {
+            $("#DtfechaEntr").focus();
+            $("#DtfechaEntr").val("");
+        }
+    }
+    );
+    $("#DthoraEntr").focusout(function () {
+        if (esHoraValida() != true) {
+            $("#DthoraEntr").val(" ");
+            $("#DthoraEntr").focus();
+        }
+    });
+    $("#DthoraEntr").focusin(function () {
+        var texto = $("#DtfechaEntr").val();
+        if (texto == "") {
+            $("#DtfechaEntr").focus();
+        }
+    });
+    $("#prodsPedido").focusin(function () {
+        var productos = $("#prodsPedido option").toArray();
+        if (productos.length == 1) {
+            toastr.error("Debe de seleccionar al menos un producto para poder continuar");
+            $("#lst_productos").focus();
+        }
+    });
+    $("#btnIngr").focusin(function () {
+        var productos = $("#prodsPedido option").toArray();
+        if (productos.length == 1) {
+            toastr.error("Debe de seleccionar al menos un producto para poder continuar");
+            $("#lst_productos").focus();
+        } else {
+            $("#btnIngr").removeClass("disabled");
+        }
+    });
+    $("#lst_productos").focusin(function () {
+        var texto = $("#DthoraEntr").val();
+        if (texto === "") {
+            $("#DthoraEntr").val(" ");
+            $("#DthoraEntr").focus();
+        }
+    });
+    function esHoraValida() {
+        var hora = $("#DthoraEntr").val();
+        if (hora == "") {
+            $("#DthoraEntr").focus();
+        } else {
+            var fecha = new Date($("#DtfechaEntr").val());
+            fecha.setDate(fecha.getDate() + 1);
+            fecha.setHours(hora.substring(0, 2));
+            fecha.setMinutes(hora.substring(3, 5));
+            if (fechaActual.getDate() == fecha.getDate()
+                && fechaActual.getHours() == fecha.getHours() && fechaActual.getMinutes() == fecha.getMinutes()) {
+                toastr.error("No se puede  hacer entregas inmeidatas");
+                return false;
+            } else if (horaInicio.getHours() > fecha.getHours() || horaCierre.getHours() < fecha.getHours()
+                && horaCierre.getMinutes() < fecha.getMinutes() || horaCierre.getMinutes() < fecha.getMinutes()
+                || horaCierre.getHours() < fecha.getHours()) {
+                toastr.error("Hora fuera de horario laboral");
+                return false;
+            } else if (horaCierre.getHours() >= fecha.getHours() && fechaActual.getHours() > horaCierre.getHours() && fechaActual.getDate() == fecha.getDate()) {
+                toastr.error("Hora ingresada invalida");
+                return false;
+            } else {
+                return true;
+            }
+            /* las expresiones anteriores validan que la hora de entrega se encuentre dentro del horario de trabajo de la farmacia*/
+        }
+    }
+    function esFechaValida() {
+            var fecha = $("#DtfechaEntr").val();
+            if (fecha == "") {
+                $("#DtfechaEntr").focus();
+            } else {
+                var fechaActual = new Date();
+                var fechaSelec = new Date(fecha);
+                fechaSelec.setDate(fechaSelec.getDate() + 1);
+                if (fechaActual.getDate() > fechaSelec.getDate() && fechaActual.getMonth() == fechaSelec.getMonth() ||
+                    fechaActual.getDate() > fechaSelec.getDate() && fechaActual.getMonth() > fechaSelec.getMonth()) {
+                    toastr.error("La entrega no se puede realizar en fechas anteriores a la actual");
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+        }
+</script>
+

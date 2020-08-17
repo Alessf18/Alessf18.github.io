@@ -1,0 +1,89 @@
+﻿@model proyectoPrograAvanz.Models.Usuarios
+
+@{
+    Layout = "~/Views/Shared/_Layout_Login.cshtml";
+}
+
+<h2 class="bg-light p-2 text-capitalize">Creacion de cuenta</h2>
+
+@using (Html.BeginForm(null,null,FormMethod.Post,new {id="frmCrearUsu" }))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal mt-3">
+      
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4"></div>
+                <div class="form-group col-lg-4 align-self-center">
+                    @Html.Label("Correo electónico", htmlAttributes: new { @class = "control-label " })
+                    <div class="col-md-10">
+                        <input id="correo" class="form-control border-primary" type="email" required="required" autofocus />
+                    </div>
+                </div>
+                <div class="col-lg-3"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4"></div>
+                <div class="form-group col-lg-4 align-self-center">
+                    <label class="control-label"> Contraseña</label>
+                    <div class="col-md-10">
+                        <input id="contra" class="form-control border-primary" type="password" required="required" />
+                    </div>
+                </div>
+                <div class="col-lg-3"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4"></div>
+                <div class="form-group col-lg-4 align-self-center">
+                    <label class="control-label"> Confirmar Contraseña</label>
+                    <div class="col-md-10">
+                        <input id="contra" class="form-control border-primary" type="password" required="required" />
+                    </div>
+                </div>
+                <div class="col-lg-3"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4"></div>
+                <div class="form-group col-lg-4 align-self-center">
+                    <button id="btnIngr" type="submit" class="btn btn-primary btn-pill btn-block">Crear Cuenta</button>
+                </div>
+                <div class="col-lg-3"></div>
+            </div>
+        </div>
+        <input id="cedCl" type="hidden" value="@ViewBag.clCd" />
+    </div>
+}
+    <script>
+    $("#btnIngr").click(function (e) {
+        e.preventDefault();
+        var datos = [];
+        datos[0] = $("#correo").val();
+        datos[1] = $("#contra").val();
+        datos[2] = $("#cedCl").val();
+        $.ajax({
+            type: "POST",
+            url: "/Usuarios/guardarInfo",
+            data: {
+                datos: datos
+            }, complete: function (data) {
+                if (data.responseJSON == "E") {
+                    window.location = "/Home/Login";
+                } else {
+                    swal("Error ","No se pudo registrar el usuario ","error");
+                    document.getElementById("frmCrearUsu").reset();
+                    $("#correo").focus();
+                }
+            }
+        });
+    });
+
+    </script>
+

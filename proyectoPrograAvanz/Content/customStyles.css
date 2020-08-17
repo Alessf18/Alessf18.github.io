@@ -1,0 +1,128 @@
+﻿body {
+    overflow-x:hidden;
+}
+#navbar-prin {
+    background-color:rgba(24, 61, 90, 0.92);
+    /*#505368;*/
+    color: #ffffff;
+}
+footer {
+    background-color:#3f414b;
+    color: #ffffff;
+    height: 475px;
+    margin-top: 10px;
+}
+/* Style all font awesome icons */
+.fa {
+    font-size: 15px;
+    width: 20px;
+    text-align: center;
+    text-decoration: none;
+    border-radius:50%;
+   
+}
+
+    /* Add a hover effect if you want */
+    .fa:hover {
+        opacity: 0.7;
+        color:#ffffff;
+    }
+ ul  li a:hover {
+    color: #0026ff;
+}
+    
+    @media only screen and (max-width:770px) {
+        .site-footer {
+            display: none;
+        }
+    }
+
+    
+
+    ::-moz-selection {
+        background-color: transparent;
+        color: #000;
+    }
+
+    ::selection {
+        background-color: transparent;
+        color: #000;
+    }
+
+    .bgPrincipal {
+        background-image: url(../images/hero_1.jpg);
+        height: 100px;
+        width: auto;
+    }
+
+    #registrarRepar:hover {
+        background-color: #4800ff;
+        color: #ffffff;
+    }
+
+    #btnLogin:hover {
+        background-color: #4800ff;
+        color: #ffffff;
+    }
+
+    .custom-navbar ul li {
+        text-decoration: none;
+    }
+
+    #btnIngr:hover {
+        background-color: #4800ff;
+        color: #ffffff;
+    }
+
+    .custom-navbar {
+        background-color: rgba(24, 61, 90, 0.92);
+        color: #ffffff;
+        display:none;
+    }
+
+    .custom-navbar-menu {
+        width: 200px; /* Set a width if you like */
+    }
+
+    .custom-navbar a {
+        color: #ffffff; /* Black text color */
+        display: block; /* Make the links appear below each other */
+        padding: 12px; /* Add some padding */
+        text-decoration: none; /* Remove underline from links */
+    }
+
+        .custom-navbar a:hover {
+            background-color: #2e2e65; /* Dark grey background on mouse-over */
+            color: #ffffff
+        }
+
+        .custom-navbar a.active {
+            background-color: rgba(27, 85, 131, 0.92); /* Add a green color to the "active/current" link */
+            color: white;
+        }
+
+    .custom-navbar button:hover {
+        color: #ffffff;
+        background-color: #2e2e65;
+    }
+
+    #menuMobile button {
+        color: #ffffff;
+    }
+
+        #menuMobile button:hover {
+            color: #ffffff;
+            background-color: rgba(170, 173, 183, 0.20);
+        }
+
+    #menuMobile ul {
+        background-color: rgb(49, 46, 46);
+        color: #ffffff;
+    }
+
+        #menuMobile ul li a:hover {
+            color: #ffffff;
+            background-color: rgba(170, 173, 183, 0.20);
+        }
+
+   

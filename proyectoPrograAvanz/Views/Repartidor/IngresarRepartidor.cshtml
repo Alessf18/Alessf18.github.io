@@ -1,0 +1,198 @@
+﻿@model proyectoPrograAvanz.Models.Repartidor
+
+@{
+ ViewBag.Title = "IngresarRepartidor";
+}
+<h2 class="ml-2">Ingresar Repartidor</h2>
+
+@using (Html.BeginForm(null,null,FormMethod.Post,new { id="frmIngrRepar", @class =""}))
+{
+    @Html.AntiForgeryToken()
+    <div class="row ml-2">
+        <div class="col-sm-4">
+            <label for="Snombre" class="control-label, text-dark" >Nombre </label>
+                @Html.EditorFor(model => model.Snombre, new { htmlAttributes = new { @class = "form-control", autofocus = "true", spellcheck = "true", maxLength="40" } })
+                @Html.ValidationMessageFor(model => model.Snombre, "", new { @class = "text-danger" })
+
+        </div>
+        <div class="col-sm-4">
+            @Html.Label("Apellidos", htmlAttributes: new { @class = "control - label, text-dark" })
+            
+                @Html.EditorFor(model => model.Sapellidos, new { htmlAttributes = new { @class = "form-control", spellcheck = "true",maxlength="60" } })
+                @Html.ValidationMessageFor(model => model.Sapellidos, "", new { @class = "text-danger" })
+            
+        </div>
+        <div class="col-sm-3">
+            @Html.Label("Número de cedula", htmlAttributes: new { @class = "control - label, text-dark " })
+           
+                @Html.EditorFor(model => model.Scedula, new { htmlAttributes = new { @class = "form-control",maxlength="9" } })
+                @Html.ValidationMessageFor(model => model.Scedula, "", new { @class = "text-danger" })
+            
+        </div>
+    </div>
+    <div class="row ml-2 mb-3">
+        <div class="col-sm-4">
+            @Html.Label("Número de celular", htmlAttributes: new { @class = "control-label, text-dark" })
+            
+                @Html.EditorFor(model => model.StelCelular, new { htmlAttributes = new { @class = "form-control", maxlength = "8" } })
+                @Html.ValidationMessageFor(model => model.StelCelular, "", new { @class = "text-danger" })
+        
+        </div>
+        <div class="col-sm-4">
+            <label for="Scorreo" class="control-label, text-dark" > Correo electrónico</label>
+                @Html.EditorFor(model => model.Scorreo, new { htmlAttributes = new { @class = "form-control",maxlength = "30" } })
+                @Html.ValidationMessageFor(model => model.Scorreo, "", new { @class = "text-danger" })
+           
+        </div>
+        <div class="col-sm-3"></div>
+
+    </div>
+    <div class="row">
+        <div class="col-sm-3"></div>
+        <div class="form-group col-sm-6">
+            <button id="registrarRepar" type="submit" class="btn btn-primary btn-pill btn-block disabled ">Registrar repartidor</button>
+        </div>
+        <div class="col-sm-3"></div>
+    </div>
+
+}
+<script>
+    $("#registrarRepar").click(function (e) {
+        e.preventDefault();
+        if ($("#registrarRepar").hasClass("disabled") != true) {
+            var datos = [];
+            datos[0] = $("#Scedula").val();
+            datos[1] = $("#Snombre").val();
+            datos[2] = $("#Sapellidos").val();
+            datos[3] = $("#StelCelular").val();
+            datos[4] = $("#Scorreo").val();
+            $.ajax({
+                type: "POST",
+                url: "/Repartidor/Insertar_Repartidor",
+                data: {
+                    datos: datos
+                }, complete: function (data) {
+                    if (data.responseJSON == "E") {
+                        swal("Acción exitosa", "Repartidor ingresado de manera correcta ", "success");
+                    } else {
+                        swal("Acción no realizada", "No se pudo ingresar  al repartidor ", "error");
+                    }
+                    document.getElementById("frmIngrRepar").reset();
+                    $("#Snombre").focus();
+                }
+            });
+        }
+    });
+    $("#Scorreo").focusout(function () {
+        var correo = $("#Scorreo").val();
+        if (correo == "") {
+            $("#Scorreo").focus();
+        } else {
+            var datos = [];
+            datos[0] = correo;
+            $.ajax({
+                url: "/Repartidor/EsCorreoValido",
+                type: "POST",
+                data: {
+                    datos: datos
+                }, complete: function (data) {
+                    if (data.responseJSON == "F") {
+                        toastr.error("Correo ya existente en el sistema, por favor cambie su correo");
+                        $("#Scorreo").val("");
+                        $("#Scorreo").focus();
+                    }
+                }
+            });
+        }
+    });
+    $("#Snombre").keyup(function (e) {
+        if ((e.key.match("^[0-9]+$") != null)) {
+            var texto = $("#Snombre").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#Snombre").val(textoNuevo);
+        }
+    });
+    $("#Snombre").focusout(function (e) {
+        var texto = $("#Snombre").val();
+        if ((texto.match("^[0-9]+$") != null)) {
+            $("#Snombre").val("");
+        }
+    });
+    $("#Sapellidos").focusin(function () {
+        var texto = $("#Snombre").val();
+        if (texto == "" || texto.length<=2) {
+            $("#Snombre").focus();
+        }   
+    });
+    $("#Sapellidos").focusout(function (e) {
+        var texto = $("#Sapellidos").val();
+        if ((texto.match("^[0-9]+$") != null)) {
+            $("#Sapellidos").val("");
+        }
+    });
+    $("#Sapellidos").keyup(function (e) {
+        if ((e.key.match("^[0-9]+$") != null)) {
+            var texto = $("#Sapellidos").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#Sapellidos").val(textoNuevo);
+        }
+    });
+    $("#Scedula").focusin(function () {
+        var texto = $("#Sapellidos").val();
+        if (texto == "" || texto.length <= 2) {
+            $("#Sapellidos").focus();
+        }
+    });
+    $("#Scedula").focusin(function () {
+        var texto = $("#Sapellidos").val();
+        if (texto == "" || texto.length <= 2) {
+            $("#Sapellidos").focus();
+        }
+    });
+    $("#Scedula").keyup(function (e) {
+        if ((e.key.match("^[a-zA-Z]+$") != null)) {
+            var texto = $("#Scedula").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#Scedula").val(textoNuevo);
+        }
+    });
+    $("#StelCelular").focusin(function () {
+        var texto = $("#Scedula").val();
+        if (texto == "" || texto.length <9) {
+            $("#Scedula").focus();
+        }
+    });
+    $("#StelCelular").focusout(function (e) {
+        var texto = $("#StelCelular").val();
+        if ((texto.match("^[a-zA-Z]+$") != null)) {
+            $("#StelCelular").val("");
+        }
+    });
+    $("#StelCelular").keyup(function (e) {
+        if ((e.key.match("^[a-zA-Z]+$") != null)) {
+            var texto = $("#StelCelular").val();
+            var textoNuevo = texto.replace(e.key, "");
+            $("#StelCelular").val(textoNuevo);
+        }
+    });
+    $("#Scorreo").focusin(function () {
+        var texto = $("#StelCelular").val();
+        if (texto == "" || texto.length < 8) {
+            $("#StelCelular").focus();
+        }
+    });
+    $("#registrarRepar").focusin(function (e) {
+        var nombre = $("#Snombre").val();
+        var apellidos = $("#Sapellidos").val();
+        var cedula = $("#Scedula").val();
+        var correo = $("#correo").val();
+        var contra = $("#contra").val();
+        var celular = $("#StelCelular").val();
+        var telCasa = $("#StelCasa").val();
+        if (nombre != "" && apellidos != "" && cedula != "" && correo != "" && contra != "" && celular != "" && telCasa != "") {
+            $("#registrarRepar").removeClass("disabled");
+        } else {
+            $("#registrarRepar").addClass("disabled");
+        }
+    });
+</script>

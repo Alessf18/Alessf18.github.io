@@ -1,0 +1,95 @@
+﻿
+@{
+    ViewBag.Title = "Login";
+    Layout = "~/Views/Shared/_Layout_Login.cshtml";
+}
+@using (Html.BeginForm(null,null,FormMethod.Post,new {id="frmLogin" }))
+{
+<div class="login-form text-center p-7 position-relative overflow-hidden container">
+    <!--begin::Login Header-->
+    <div class="container mb-5 mt-4 ">
+        <div class="row ">
+            <div class="col-sm-4"></div>
+            <div class="col-sm-4 align-self-center">
+                <a href="/Home/Homepage">
+                    <img src="https://dewey.tailorbrands.com/production/brand_version_mockup_image/255/3193057255_511ab257-2b0d-4b84-83f1-224d561d1bbc.png?cb=1592861809" class="hide-percy show-for-md-lg" alt="" width="130" height="30">
+                </a>
+            </div>
+            <div class="col-sm-4"></div>
+        </div>
+    </div>
+    <!--begin::Login Sign in form-->
+    <div class="login-signin ">
+        <div class="mb-20">
+            <div class="text-muted font-weight-bold">Ingrese sus credenciales:</div>
+        </div>
+        <div class="container mb-2">
+            <div class="row ">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4 align-self-center">
+                    <input id="inptCorreo" class="form-control h-auto form-control-solid py-4 px-8" type="text" placeholder="Correo electronico" name="username" autocomplete="off" autofocus spellcheck="true" required="required"/>
+                    <div class="fv-plugins-message-container"></div>
+                </div>
+                <div class="col-sm-3"></div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row ">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4 align-self-center">
+                    <input  id="inptContra"class="form-control h-auto form-control-solid py-4 px-8" type="password" placeholder="Contraseña" name="password"spellcheck="true" required="required"/>
+                    <div class="fv-plugins-message-container"></div>
+                </div>
+                <div class="col-sm-3"></div>
+            </div>
+        </div>
+            <div class="form-group d-flex flex-wrap ">
+            </div>
+            <button id="btnLogin" type="submit" class="btn btn-pill btn-primary font-weight-bold px-7 py-3 my-3 mx-4 ">Iniciar sesion</button>
+            <input type="hidden"><div></div>
+
+            <div class="mt-10">
+                <span class="opacity-70 mr-4">
+                    Todavia no tiene una cuenta?
+                </span>
+                <a href="/Clientes/RegistrarCliente" id="kt_login_signup" class="text-muted text-hover-primary font-weight-bold">Cree una cuenta</a>
+            </div>
+        </div>
+        <!--end::Login Sign in form-->
+    </div>
+}
+<script>
+    $("#btnLogin").click(function (e) {
+        e.preventDefault();
+        var datos = [];
+        datos[0] = $("#inptCorreo").val();
+        datos[1] = $("#inptContra").val();
+        $.ajax({
+            type: "POST",
+            url: "/Home/iniciarSesion",
+            data: {
+                datos: datos
+            }, complete: function (data) {
+                if (data.responseJSON == "E") {
+                    window.location = "/Home/Homepage";
+                } else {
+                    swal("Error al iniciar sesion","Credenciales incorrectos, intentelo de nuevo","error");
+                    document.getElementById("frmLogin").reset();
+                    $("#inptCorreo").focus();
+                }
+            }
+        });
+    });
+    $("#inptContra").focusin(function () {
+        var texto = $("#inptCorreo").val();
+        if (texto == "") {
+            $("#inptCorreo").focus();
+        }
+    });
+    $("#btnLogin").focusin(function () {
+        var texto = $("#inptContra").val();
+        if (texto == "") {
+            $("#inptContra").focus();
+        }
+    });
+</script>
